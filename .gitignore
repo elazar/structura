@@ -1,0 +1,6 @@
+/.phpunit.cache
+!/coverage
+/coverage/*
+!/coverage/.gitkeep
+/composer.lock
+/vendor

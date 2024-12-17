@@ -1,0 +1,20 @@
+name: structura
+
+services:
+
+  php:
+    build: ./docker/php
+    volumes:
+      - .:/app
+    working_dir: /app
+    stdin_open: true
+    tty: true
+    command: /usr/local/bin/php
+    restart: "no"
+
+  mysql:
+    image: mysql:8.0
+    environment:
+      - MYSQL_ROOT_PASSWORD=
+      - MYSQL_ALLOW_EMPTY_PASSWORD=yes
+      - MYSQL_INITDB_SKIP_TZINFO=yes

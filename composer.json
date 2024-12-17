@@ -1,0 +1,39 @@
+{
+    "name": "elazar/structura",
+    "description": "Utility that reads and writes SQL schemas in various formats",
+    "keywords": ["databases", "sql", "schema", "diagrams"],
+    "version": "1.0.0",
+    "type": "project",
+    "license": "MIT",
+    "homepage": "https://github.com/elazar/structura",
+    "bin": ["bin/structura"],
+    "require": {
+        "php": ">=8.4.1"
+    },
+    "suggest": {
+        "doctrine/dbal": "Required to use DoctrineReader"
+    },
+    "scripts": {
+        "analyze": "phpstan analyze",
+        "test": "phpunit"
+    },
+    "require-dev": {
+        "ext-pdo_sqlite": "*",
+        "doctrine/dbal": "^4.2",
+        "phpstan/phpstan": "^2.0",
+        "phpunit/phpunit": "^11.5"
+    },
+    "autoload": {
+        "psr-4": {
+            "Elazar\\Structura\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Elazar\\Structura\\Tests\\": "tests"
+        }
+    },
+    "config": {
+        "sort-packages": true
+    }
+}
