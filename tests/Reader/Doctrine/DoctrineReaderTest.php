@@ -17,6 +17,7 @@ use Elazar\Structura\{
     Model\UniqueKey,
     Property\Named,
     Reader\Doctrine\DoctrineReader,
+    Reader\Doctrine\ForeignKeysFactory,
     Reader\Doctrine\NamedConnection,
     Reader\Doctrine\NamedConnections,
     Value\Name,
@@ -334,9 +335,7 @@ class DoctrineReaderTest extends TestCase
         $this->dropDatabases($namedConnections);
     }
 
-    /**
-     * @covers \Elazar\Structura\Reader\Doctrine\ForeignKeysFactory::getReferenceDatabaseName
-     */
+    #[Covers(ForeignKeysFactory::class, 'getReferenceDatabaseName')]
     public function testGetDatabasesWithAmbiguousForeignKeys(): void
     {
         if (!extension_loaded('pdo_mysql')) {
