@@ -250,17 +250,7 @@ class DoctrineReaderTest extends TestCase
             name: 'table_one_fk',
         );
 
-        $params = [
-            'driver' => 'pdo_mysql',
-            'host' => 'mysql',
-            'user' => 'root',
-            'password' => '',
-            'driverOptions' => [
-                'default_table_options' => [
-                    'engine' => 'InnoDB',
-                ],
-            ],  
-        ];
+        $params = $this->getMySqlParams();
         $testDatabases = new TestDatabases(
             new TestDatabase('database_one', $params, $databaseOneSchema),
             new TestDatabase('database_two', $params, $databaseTwoSchema),
@@ -390,5 +380,20 @@ class DoctrineReaderTest extends TestCase
                 }
             } catch (NotSupported) { }
         }
+    }
+
+    private function getMySqlParams(): array
+    {
+        return [
+            'driver' => 'pdo_mysql',
+            'host' => 'mysql',
+            'user' => 'root',
+            'password' => '',
+            'driverOptions' => [
+                'default_table_options' => [
+                    'engine' => 'InnoDB',
+                ],
+            ],
+        ];
     }
 }
