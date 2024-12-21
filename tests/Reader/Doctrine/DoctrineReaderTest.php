@@ -11,6 +11,7 @@ use Doctrine\DBAL\{
 
 use Elazar\Structura\{
     Collection\NonEmptyNamedCollection,
+    Exception\AmbiguousForeignKeyException,
     Model\Key,
     Model\PrimaryKey,
     Model\UniqueKey,
@@ -329,6 +330,60 @@ class DoctrineReaderTest extends TestCase
         $this->assertSame('table_one', $tableTwoTableOneForeignKey->referenceTableName->value);
         $this->assertCount(1, $tableTwoTableOneForeignKey->referenceColumns);
         $this->assertTrue($tableTwoTableOneForeignKey->referenceColumns->has('id'));
+
+        $this->dropDatabases($namedConnections);
+    }
+
+    /**
+     * @covers \Elazar\Structura\Reader\Doctrine\ForeignKeysFactory::getReferenceDatabaseName
+     */
+    public function testGetDatabasesWithAmbiguousForeignKeys(): void
+    {
+        if (!extension_loaded('pdo_mysql')) {
+            $this->markTestSkipped('pdo_mysql extension not loaded');
+        }
+
+        $databasePrimaryKeySchema = new Schema();
+        $tablePrimaryKeySchema = $databasePrimaryKeySchema->createTable('table_pk');
+        $tablePrimaryKeySchema->addColumn('pk_1', 'integer');
+        $tablePrimaryKeySchema->addColumn('pk_2', 'integer');
+        $tablePrimaryKeySchema->setPrimaryKey(['pk_1', 'pk_2']);
+
+        $databaseForeignKeySchema = new Schema();
+        $tableForeignKeySchema = $databaseForeignKeySchema->createTable('table_fk');
+        $tableForeignKeySchema->addColumn('table_pk_1', 'integer');
+        $tableForeignKeySchema->addColumn('table_pk_2', 'integer');
+        $tableForeignKeySchema->addForeignKeyConstraint(
+            'database_pk_1.table_pk',
+            ['table_pk_1', 'table_pk_2'],
+            ['pk_1', 'pk_2'],
+            name: 'table_pk_fk',
+        );
+
+        $params = $this->getMySqlParams();
+        $testDatabases = new TestDatabases(
+            new TestDatabase('database_pk_1', $params, $databasePrimaryKeySchema),
+            new TestDatabase('database_pk_2', $params, $databasePrimaryKeySchema),
+            new TestDatabase('database_fk', $params, $databaseForeignKeySchema),
+        );
+        $namedConnections = $this->getNamedConnections($testDatabases);
+
+        $doctrineReader = new DoctrineReader($namedConnections);
+
+        try {
+            $databases = $doctrineReader->getDatabases();
+            $this->fail('Expected exception was not thrown');
+        } catch (AmbiguousForeignKeyException $e) {
+            $this->assertEqualsCanonicalizing(
+                ['database_pk_1', 'database_pk_2'],
+                $e->databaseNames,
+            );
+            $this->assertSame('table_pk', $e->tableName);
+            $this->assertEqualsCanonicalizing(
+                ['pk_1', 'pk_2'],
+                $e->columnNames,
+            );
+        }
 
         $this->dropDatabases($namedConnections);
     }

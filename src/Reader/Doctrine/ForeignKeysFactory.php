@@ -86,6 +86,20 @@ class ForeignKeysFactory
             return reset($namedSchemaManagersContainingTable)->name;
         }
 
+        /**
+         * Multiple configured databases have a table and columns matching
+         * those in the specified foreign key, preventing its resolution to a
+         * single primary key.
+         *
+         * Doctrine's schema introspection does not appear to include a
+         * reference to the database when a foreign key in one database
+         * references a primary key in another database, even if that
+         * information is provided in the table schema.
+         *
+         * While this behavior is not explicitly documented, related online
+         * discussions frequently say it's unsupported due in part to most
+         * database servers not providing native support for it.
+         */
         $databaseNames = array_map(
             fn(NamedSchemaManager $namedSchemaManager)
                 => $namedSchemaManager->name->value,
