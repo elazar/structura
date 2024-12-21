@@ -64,11 +64,22 @@ class DoctrineReaderTest extends TestCase
      * non-unique indexes; and foreign key constraints.
      *
      * Since it is possible to perform this test using an in-memory SQLite
-     * database, it is implemented to do so for performance reasons and
-     * because the pdo_sqlite extension is installed by default.
+     * database, it is implemented to do so if possible for performance reasons
+     * and because the pdo_sqlite extension is installed by default.
      */
     public function testGetDatabasesWithOneDatabase(): void
     {
+        if (extension_loaded('pdo_sqlite')) {
+            $params = [
+                'driver' => 'pdo_sqlite',
+                'memory' => true,
+            ];
+        } elseif (extension_loaded('pdo_mysql')) {
+            $params = $this->getMySqlParams();
+        } else {
+            $this->markTestSkipped('pdo_sqlite and pdo_mysql extensions not loaded');
+        }
+
         $schema = new Schema();
 
         $tableOneSchema = $schema->createTable('table_one');
@@ -90,14 +101,7 @@ class DoctrineReaderTest extends TestCase
         $tableTwoSchema->addForeignKeyConstraint('table_one', ['table_one_id'], ['id'], name: 'table_one_fk');
 
         $testDatabases = new TestDatabases(
-            new TestDatabase(
-                'database_one',
-                [
-                    'driver' => 'pdo_sqlite',
-                    'memory' => true,
-                ],
-                $schema,
-            ),
+            new TestDatabase('database_one', $params, $schema),
         );
         $namedConnections = $this->getNamedConnections($testDatabases);
 
@@ -235,6 +239,10 @@ class DoctrineReaderTest extends TestCase
      */
     public function testGetDatabasesWithTwoDatabases(): void
     {
+        if (!extension_loaded('pdo_mysql')) {
+            $this->markTestSkipped('pdo_mysql extension not loaded');
+        }
+
         $databaseOneSchema = new Schema();
         $tableOneSchema = $databaseOneSchema->createTable('table_one');
         $tableOneSchema->addColumn('id', 'integer');
