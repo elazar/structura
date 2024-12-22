@@ -11,7 +11,7 @@ class NoDatabaseSelectedException extends \RuntimeException
      */
     public function __construct(public readonly mixed $connection)
     {
-        $connectionString = var_export($connection, true);
+        $connectionString = print_r($connection, true);
         parent::__construct("No database selected on connection: {$connectionString}");
     }
 }
