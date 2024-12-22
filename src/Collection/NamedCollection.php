@@ -29,8 +29,6 @@ readonly class NamedCollection extends Collection
     public function __construct(
         Named... $elements,
     ) {
-        parent::__construct(...$elements);
-
         /** @var K[] */
         $elementNames = array_map(
             fn(Named $element) => $element->name->value,
@@ -47,6 +45,9 @@ readonly class NamedCollection extends Collection
             );
             throw new DuplicatedNamesException($duplicatedNames);
         }
+
+        parent::__construct(...$elements);
+
     }
 
     /**
