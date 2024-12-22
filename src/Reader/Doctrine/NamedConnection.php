@@ -8,6 +8,7 @@ use Doctrine\DBAL\{
     Connection,
     Configuration,
     DriverManager,
+    Platforms\SQLitePlatform,
     Tools\DsnParser,
 };
 
@@ -57,9 +58,13 @@ readonly final class NamedConnection implements Named
     /**
      * @return non-empty-string
      */
-    public static function getNameFromConnection(Connection $connection): string
+    private static function getNameFromConnection(Connection $connection): string
     {
         $database = $connection->getDatabase();
+        $platform = $connection->getDriver()->getDatabasePlatform($connection);
+        if ($platform instanceof SQLitePlatform && $database === 'main') {
+            $database = '';
+        }
         return match ($database) {
             null    => throw new NoDatabaseSelectedException($connection),
             ''      => '[selected]',
